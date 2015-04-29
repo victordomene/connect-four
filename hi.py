@@ -108,13 +108,13 @@ def singleplayer():
 	while(True):
 		while(b.get_player() == "X"):
 			flag = 0
-			while (flag == 0):
-				try:
-					play = input("Where to play?: ")
-					flag = 1
-				except NameError as e:
-					print "Type in an INTEGER!"
-					flag = 0
+			while (flag == 0)
+			try:
+				play = input("Where to play?: ")
+				flag = 1
+			except NameError as e:
+				print "Type in an INTEGER!"
+				flag = 0
 
 			try:
 				b.play(play-1)
