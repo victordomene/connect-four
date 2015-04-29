@@ -102,9 +102,9 @@ class Board(object):
         return deepcopy(self.cols)
 
     def play_random(self):
-        x = random.randint(0,7)
+        x = random.randint(0,6)
         while (self.cannot_play_in(x)):
-            x = random.randint(0,7)
+            x = random.randint(0,6)
         self.play(x)
 
     def get_score(self):
@@ -204,9 +204,10 @@ def singleplayer():
             except AssertionError:
                 print "Type in a valid integer!"
 
-        (score, move) = negamax(b, 6, 1)
+        (score, move) = negamax(b, 2, 1)
         if (move is not None):
             try:
+                print
                 b.play(move)
             except ValueError as e:
                 if e.message == "ColumnFull":
