@@ -4,7 +4,11 @@ import random
 INFINITY = 100
 random.seed()
 
-def negamax(board, plyr, depth, color):
+COLSNUM = 7
+ROWSNUM = 6
+
+def negamax(board, depth, color):
+    #print "STARTING MINIMAX"
     score = board.get_score()
 
     if depth == 0:
@@ -13,19 +17,26 @@ def negamax(board, plyr, depth, color):
         maxValue = -INFINITY
         maxMove = None
 
-        for i in range(0,6):
+        for i in range(0,7):
             c = deepcopy(board)
             if (not board.cannot_play_in(i)):
                 oldValue = maxValue
                 oldMove = maxMove
+
                 try:
                     c.play(i)
-                    (scr, move) = negamax(c, plyr, depth - 1, -1*color)
+                    (scr, move) = negamax(c, depth - 1, -1*color)
                     scr = -scr
+
+                    #print "scr: {}   -   maxValue: {}".format(scr, maxValue)
+
                     if scr >= maxValue:
                         maxValue = scr
                         maxMove = i
-                    break
+
+                    #print "{}{}".format("maxValue: ", maxValue)
+                    #print "{}{}".format("maxMove: ", maxMove)
+
                 except ValueError, e:
                     if e.message == "ColumnFull":
                         maxValue = oldValue
@@ -90,8 +101,75 @@ class Board(object):
     def copy_board(self):
         return deepcopy(self.cols)
 
-    def get_score(plyr):
-        return random.randint(-1,1)
+    def play_random(self):
+        x = random.randint(0,7)
+        while (self.cannot_play_in(x)):
+            x = random.randint(0,7)
+        self.play(x)
+
+    def get_score(self):
+        score = 0
+
+        for i in range(0, COLSNUM - 3):
+            for j in range(0, ROWSNUM - 3):
+                fours = [[],[]]
+
+                for x in range (0,10):
+                    fours[0].append(0)
+                    fours[1].append(0)
+
+                for k in range(0,4):
+                    for m in range(0,4):
+                        if (self.cols[i+k][j+m] != "."):
+                            if (self.cols[i+k][j+m] == "X"):
+                                index = 0
+                            elif (self.cols[i+k][j+m] == "O"):
+                                index = 1
+
+                            fours[index][k] += 1
+                            fours[index][m+4] += 1
+                            if (k == m):
+                                fours[index][8] += 1
+                            elif (k == 3-m):
+                                fours[index][9] += 1
+
+                for k in range(0,10):
+                    if (fours[0][k] == 4):
+                        return -1
+                    elif (fours[1][k] == 4):
+                        return 1
+        return score
+
+    def winning(self):
+        flag = False
+
+        for i in range(0, COLSNUM - 3):
+            for j in range(0, ROWSNUM - 3):
+                fours = [[],[]]
+
+                for x in range (0,10):
+                    fours[0].append(0)
+                    fours[1].append(0)
+
+                for k in range(0,4):
+                    for m in range(0,4):
+                        if (self.cols[i+k][j+m] != "."):
+                            if (self.cols[i+k][j+m] == "X"):
+                                index = 0
+                            elif (self.cols[i+k][j+m] == "O"):
+                                index = 1
+
+                            fours[index][k] += 1
+                            fours[index][m+4] += 1
+                            if (k == m):
+                                fours[index][8] += 1
+                            elif (k == 3-m):
+                                fours[index][9] += 1
+
+                for k in range(0,10):
+                    if (fours[0][k] == 4) or (fours[1][k] == 4):
+                        flag = True
+        return flag
 
 def multiplayer():
     b = Board()
@@ -105,20 +183,19 @@ def singleplayer():
     b = Board()
     b.display_board
 
-    while(True):
+    while(not b.winning()):
         while(b.get_player() == "X"):
             flag = 0
-            while (flag == 0)
-            try:
-                play = input("Where to play?: ")
-                flag = 1
-            except NameError as e:
-                print "Type in an INTEGER!"
-                flag = 0
+            while (flag == 0):
+                try:
+                    play = input("Where to play?: ")
+                    flag = 1
+                except NameError as e:
+                    print "Type in an INTEGER!"
+                    flag = 0
 
             try:
                 b.play(play-1)
-                break
             except ValueError as e:
                 if e.message == "ColumnFull":
                     print "This column is already full. Please pick a different one."
@@ -127,20 +204,17 @@ def singleplayer():
             except AssertionError:
                 print "Type in a valid integer!"
 
-        (score, move) = negamax(b, "X", 0, 1)
+        (score, move) = negamax(b, 6, 1)
         if (move is not None):
             try:
                 b.play(move)
             except ValueError as e:
                 if e.message == "ColumnFull":
-                    print "AI fucking up"
+                    pass
                 else:
                     raise ValueError(e)
         else:
-            x = random.randint(0,6)
-            while (b.cannot_play_in(x)):
-                x = random.randint(0,6)
-            b.play(x)
+            b.play_random()
 
         b.display_board()
 
